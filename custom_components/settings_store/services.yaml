@@ -1,0 +1,33 @@
+get:
+  fields:
+    entity_id:
+      example: "sensor.my_entity"
+    scope:
+      example: "some-scope"
+    name:
+      example: "some-name"
+
+set:
+  fields:
+    entity_id:
+      example: "sensor.my_entity"
+    scope:
+      example: "some-scope"
+    name:
+      example: "some-name"
+    value:
+      example: "some-value"
+
+delete:
+  fields:
+    entity_id:
+      example: "sensor.my_entity"
+    scope:
+      example: "some-scope"
+    name:
+      example: "some-name"
+
+clear:
+  fields:
+    entity_id:
+      example: "sensor.my_entity"
