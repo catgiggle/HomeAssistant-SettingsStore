@@ -48,4 +48,5 @@ async def async_unload_entry(hass, entry):
 
 async def async_remove_entry(hass, entry):
     await hass.async_add_executor_job(
-        StorageBuilder(hass.config.path(f".storage/{DOMAIN}/{entry.data[CONFIG_NAME]}.db")).remove)
+        StorageBuilder(hass.config.path(f".storage/{DOMAIN}/{entry.data[CONFIG_NAME]}.db")).remove
+    )
