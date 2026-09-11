@@ -2,7 +2,7 @@ NAME = 'Settings Store'
 DOMAIN = 'settings_store'
 PLATFORMS = ['sensor']
 AUTHOR = 'Damian Wójcik'
-VERSION = '0.0.4'
+VERSION = '0.0.5'
 
 CONFIG_LABEL = 'label'
 CONFIG_NAME = 'name'
