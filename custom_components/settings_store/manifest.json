@@ -1,13 +1,13 @@
 {
   "domain": "settings_store",
   "name": "Settings Store",
-  "version": "0.0.5",
   "codeowners": [
     "@catgiggle"
   ],
-  "iot_class": "local_push",
   "config_flow": true,
   "documentation": "https://github.com/catgiggle/HomeAssistant-SettingsStore",
+  "iot_class": "local_push",
   "issue_tracker": "https://github.com/catgiggle/HomeAssistant-SettingsStore/issues",
-  "requirements": []
+  "requirements": [],
+  "version": "0.0.6"
 }

@@ -1,9 +1,13 @@
+from homeassistant.helpers import config_validation as cv
+
 from .Service.ClearService import ClearService
 from .Service.DeleteService import DeleteService
 from .Service.GetService import GetService
 from .Service.SetService import SetService
 from .Setup.StorageBuilder import StorageBuilder
 from .constants import *
+
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 
 async def async_setup(hass, _config):
@@ -43,4 +47,5 @@ async def async_unload_entry(hass, entry):
 
 
 async def async_remove_entry(hass, entry):
-    await hass.async_add_executor_job(StorageBuilder(hass.config.path(f".storage/{DOMAIN}/{entry.data[CONFIG_NAME]}.db")).remove)
+    await hass.async_add_executor_job(
+        StorageBuilder(hass.config.path(f".storage/{DOMAIN}/{entry.data[CONFIG_NAME]}.db")).remove)
