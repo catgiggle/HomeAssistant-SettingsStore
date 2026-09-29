@@ -1,16 +1,16 @@
 {
   "config": {
     "error": {
-      "invalid_label": "Must contain at least one letter.",
-      "invalid_name": "Only lowercase letters, numbers, and underscores are allowed."
+      "invalid_display_name": "Must contain at least one letter.",
+      "invalid_internal_name": "Only lowercase letters, numbers, and underscores are allowed."
     },
     "step": {
       "user": {
         "title": "Settings Store",
         "description": "Configure name and database file to store settings.",
         "data": {
-          "label": "Display name",
-          "name": "Database file"
+          "display_name": "Display name",
+          "internal_name": "Database file"
         }
       }
     }

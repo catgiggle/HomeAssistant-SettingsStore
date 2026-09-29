@@ -1,8 +1,7 @@
-import sqlite3
-
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 
+from ..Utils.Database import Database
 from ..constants import *
 
 
@@ -17,7 +16,7 @@ class DeleteService:
             self.handle,
             schema=vol.Schema({
                 vol.Required(FIELD_ENTITY_ID): cv.entity_id,
-                vol.Required(FIELD_SCOPE): cv.string,
+                vol.Optional(FIELD_SCOPE, default=DEFAULT_SCOPE): cv.string,
                 vol.Required(FIELD_NAME): cv.string,
             })
         )
@@ -25,13 +24,17 @@ class DeleteService:
     async def handle(self, request):
         sensor = self._hass.data[DOMAIN][SENSOR_ENTITIES][request.data[FIELD_ENTITY_ID]]
 
-        with sqlite3.connect(sensor.path) as connection:
+        await self._hass.async_add_executor_job(
+            self._execute,
+            sensor.path,
+            request.data[FIELD_SCOPE],
+            request.data[FIELD_NAME],
+        )
+        sensor.refresh()
+
+    def _execute(self, path, scope, name):
+        with Database.connect(path) as connection:
             connection.execute('''
                 DELETE FROM settings_store
                 WHERE scope = ? AND name = ?
-            ''', (
-                request.data[FIELD_SCOPE],
-                request.data[FIELD_NAME],
-            ))
-
-        sensor.refresh()
+            ''', (scope, name))

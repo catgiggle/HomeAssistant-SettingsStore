@@ -1,8 +1,7 @@
-import sqlite3
-
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 
+from ..Utils.Database import Database
 from ..constants import *
 
 
@@ -23,9 +22,11 @@ class ClearService:
     async def handle(self, request):
         sensor = self._hass.data[DOMAIN][SENSOR_ENTITIES][request.data[FIELD_ENTITY_ID]]
 
-        with sqlite3.connect(sensor.path) as connection:
+        await self._hass.async_add_executor_job(self._execute, sensor.path)
+        sensor.refresh()
+
+    def _execute(self, path):
+        with Database.connect(path) as connection:
             connection.execute('''
                 DELETE FROM settings_store
             ''')
-
-        sensor.refresh()

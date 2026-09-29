@@ -1,17 +1,18 @@
-import sqlite3
-
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.const import EntityCategory
 
+from ..Utils.Database import Database
 from ..constants import *
 
 
 class CountSensor(SensorEntity):
+    _attr_has_entity_name = True
+    _attr_name = 'Entries'
+
     def __init__(self, hass, configName, storagePath, deviceInfo):
         self._hass = hass
         self._storagePath = storagePath
 
-        self._attr_name = 'Entries'
         self._attr_unique_id = f"{DOMAIN}_{configName}_entries"
         self._attr_suggested_object_id = self._attr_unique_id
         self._attr_device_info = deviceInfo
@@ -23,7 +24,7 @@ class CountSensor(SensorEntity):
 
     @property
     def native_value(self):
-        with sqlite3.connect(self._storagePath) as connection:
+        with Database.connect(self._storagePath) as connection:
             result = connection.execute('''
                 SELECT COUNT(*)
                 FROM settings_store

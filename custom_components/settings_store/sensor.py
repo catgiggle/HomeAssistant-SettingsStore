@@ -5,17 +5,18 @@ from .constants import *
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
-    entryConfig = hass.data[DOMAIN][entry.entry_id]
+    config = hass.data[DOMAIN][entry.entry_id]
 
     async_add_entities([
         CountSensor(
             hass,
-            entryConfig[CONFIG_NAME],
-            entryConfig[STORAGE_PATH],
+            config[CONFIG_INTERNAL_NAME],
+            config[STORAGE_PATH],
             DeviceInfo(
                 identifiers={(DOMAIN, entry.entry_id)},
+                name=config[CONFIG_DISPLAY_NAME],
                 model=NAME,
-                serial_number=entryConfig[CONFIG_NAME],
+                serial_number=config[CONFIG_INTERNAL_NAME],
                 manufacturer=AUTHOR,
                 sw_version=VERSION,
             )

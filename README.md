@@ -25,13 +25,15 @@ This integration is installed via **HACS**:
 2. Click **Download** to download the integration.
 3. Restart Home Assistant.
 
-**Note:** Alternatively, you can add `https://github.com/catgiggle/HomeAssistant-SettingsStore` as a custom repository under **HACS → Integrations**.
+**Note:** Alternatively, you can add `https://github.com/catgiggle/HomeAssistant-SettingsStore` as a custom repository
+under **HACS → Integrations**.
 
 ## Configuration
 
 [![Open your Home Assistant instance and show an integration.](https://my.home-assistant.io/badges/integration.svg)](https://my.home-assistant.io/redirect/integration/?domain=settings_store)
 
-1. Click the button above or go to **Settings → Devices & Services → Add Integration** and search for **Settings Store**.
+1. Click the button above or go to **Settings → Devices & Services → Add Integration** and search for **Settings
+   Store**.
 2. Configure the instance parameters:
 
 You can add **multiple instances** of this integration. Each instance represents an isolated SQLite settings store.
@@ -75,7 +77,7 @@ Sets or updates a value for a specific scope and name in the store. If the entry
 | Field       | Description                                                                 |
 |-------------|-----------------------------------------------------------------------------|
 | `entity_id` | Entity ID of the Settings Store sensor (identifies target storage instance) |
-| `scope`     | Scope / namespace for grouping settings                                     |
+| `scope`     | Scope / namespace for grouping settings (optional, defaults to `default`)   |
 | `name`      | Setting key name                                                            |
 | `value`     | Value to store                                                              |
 
@@ -86,7 +88,7 @@ Retrieves the stored value for a given scope and name. Supports returning servic
 | Field       | Description                                                                 |
 |-------------|-----------------------------------------------------------------------------|
 | `entity_id` | Entity ID of the Settings Store sensor (identifies target storage instance) |
-| `scope`     | Scope / namespace identifier                                                |
+| `scope`     | Scope / namespace identifier (optional, defaults to `default`)              |
 | `name`      | Setting key name                                                            |
 
 #### Response
@@ -100,7 +102,7 @@ Deletes a specific setting identified by scope and name.
 | Field       | Description                                                                 |
 |-------------|-----------------------------------------------------------------------------|
 | `entity_id` | Entity ID of the Settings Store sensor (identifies target storage instance) |
-| `scope`     | Scope / namespace identifier                                                |
+| `scope`     | Scope / namespace identifier (optional, defaults to `default`)              |
 | `name`      | Setting key name                                                            |
 
 ### `settings_store.clear`

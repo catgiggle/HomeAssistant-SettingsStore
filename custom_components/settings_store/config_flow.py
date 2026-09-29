@@ -11,39 +11,40 @@ from .constants import *
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_user(self, user_input=None):
         formData = user_input or {}
+        formFields = {}
         formErrors = {}
 
-        fieldLabelValue = formData.get(CONFIG_LABEL, '').strip()
-        fieldNameValue = formData.get(CONFIG_NAME, '').strip()
+        formFields[CONFIG_DISPLAY_NAME] = formData.get(CONFIG_DISPLAY_NAME, '').strip()
+        formFields[CONFIG_INTERNAL_NAME] = formData.get(CONFIG_INTERNAL_NAME, '').strip()
 
         normalizedName = None
 
         if user_input is not None:
-            if not re.search(r'[a-zA-Z]', fieldLabelValue):
-                formErrors[CONFIG_LABEL] = 'invalid_label'
+            if not re.search(r'[a-zA-Z]', formFields[CONFIG_DISPLAY_NAME]):
+                formErrors[CONFIG_DISPLAY_NAME] = 'invalid_display_name'
 
-            if fieldNameValue:
-                if fieldNameValue == slugify(fieldNameValue):
-                    normalizedName = fieldNameValue
+            if formFields[CONFIG_INTERNAL_NAME]:
+                if formFields[CONFIG_INTERNAL_NAME] == slugify(formFields[CONFIG_INTERNAL_NAME]):
+                    normalizedName = formFields[CONFIG_INTERNAL_NAME]
                 else:
-                    formErrors[CONFIG_NAME] = 'invalid_name'
+                    formErrors[CONFIG_INTERNAL_NAME] = 'invalid_internal_name'
             else:
-                normalizedName = slugify(fieldLabelValue)
+                normalizedName = slugify(formFields[CONFIG_DISPLAY_NAME])
 
             if not formErrors:
                 await self.async_set_unique_id(normalizedName)
                 self._abort_if_unique_id_configured()
 
-                return self.async_create_entry(title=fieldLabelValue, data={
-                    CONFIG_LABEL: fieldLabelValue,
-                    CONFIG_NAME: normalizedName,
+                return self.async_create_entry(title=formFields[CONFIG_DISPLAY_NAME], data={
+                    CONFIG_DISPLAY_NAME: formFields[CONFIG_DISPLAY_NAME],
+                    CONFIG_INTERNAL_NAME: normalizedName,
                 })
 
         return self.async_show_form(
             step_id='user',
             data_schema=vol.Schema({
-                vol.Required(CONFIG_LABEL, default=fieldLabelValue): cv.string,
-                vol.Optional(CONFIG_NAME, default=fieldNameValue): cv.string,
+                vol.Required(CONFIG_DISPLAY_NAME, default=formFields[CONFIG_DISPLAY_NAME]): cv.string,
+                vol.Optional(CONFIG_INTERNAL_NAME, default=formFields[CONFIG_INTERNAL_NAME]): cv.string,
             }),
             errors=formErrors
         )

@@ -1,33 +1,92 @@
 get:
+  name: Get value
+  description: Retrieves a stored value for a given scope and name from the settings store.
   fields:
     entity_id:
-      example: "sensor.my_entity"
+      required: true
+      description: Entity ID of the Settings Store sensor (identifies target storage instance).
+      example: "sensor.settings_store_main_entries"
+      selector:
+        entity:
+          integration: settings_store
     scope:
-      example: "some-scope"
+      required: false
+      default: "default"
+      description: Scope / namespace identifier for grouping settings.
+      example: "irrigation"
+      selector:
+        text:
     name:
-      example: "some-name"
+      required: true
+      description: Setting key name.
+      example: "last_run_duration"
+      selector:
+        text:
 
 set:
+  name: Set value
+  description: Sets or updates a value for a specific scope and name in the settings store.
   fields:
     entity_id:
-      example: "sensor.my_entity"
+      required: true
+      description: Entity ID of the Settings Store sensor (identifies target storage instance).
+      example: "sensor.settings_store_main_entries"
+      selector:
+        entity:
+          integration: settings_store
     scope:
-      example: "some-scope"
+      required: false
+      default: "default"
+      description: Scope / namespace for grouping settings.
+      example: "irrigation"
+      selector:
+        text:
     name:
-      example: "some-name"
+      required: true
+      description: Setting key name.
+      example: "last_run_duration"
+      selector:
+        text:
     value:
-      example: "some-value"
+      required: true
+      description: Value to store.
+      example: "15"
+      selector:
+        text:
 
 delete:
+  name: Delete value
+  description: Deletes a specific setting identified by scope and name from the store.
   fields:
     entity_id:
-      example: "sensor.my_entity"
+      required: true
+      description: Entity ID of the Settings Store sensor (identifies target storage instance).
+      example: "sensor.settings_store_main_entries"
+      selector:
+        entity:
+          integration: settings_store
     scope:
-      example: "some-scope"
+      required: false
+      default: "default"
+      description: Scope / namespace identifier.
+      example: "irrigation"
+      selector:
+        text:
     name:
-      example: "some-name"
+      required: true
+      description: Setting key name.
+      example: "last_run_duration"
+      selector:
+        text:
 
 clear:
+  name: Clear all values
+  description: Removes all stored entries from the instance's database.
   fields:
     entity_id:
-      example: "sensor.my_entity"
+      required: true
+      description: Entity ID of the Settings Store sensor (identifies target storage instance).
+      example: "sensor.settings_store_main_entries"
+      selector:
+        entity:
+          integration: settings_store
