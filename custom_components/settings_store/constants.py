@@ -2,7 +2,7 @@ NAME = 'Settings Store'
 DOMAIN = 'settings_store'
 PLATFORMS = ['sensor']
 AUTHOR = 'Damian Wójcik'
-VERSION = 'v0.0.10'
+VERSION = '0.0.11'
 
 CONFIG_DISPLAY_NAME = 'display_name'
 CONFIG_INTERNAL_NAME = 'internal_name'
