@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from ..Utils.Database import Database
+from ..utils.Database import Database
 
 
 class StorageBuilder:

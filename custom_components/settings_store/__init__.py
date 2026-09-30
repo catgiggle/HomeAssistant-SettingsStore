@@ -1,11 +1,11 @@
 from homeassistant.helpers import config_validation as cv
 
-from .Model.StorageBuilder import StorageBuilder
-from .Service.ClearService import ClearService
-from .Service.DeleteService import DeleteService
-from .Service.GetService import GetService
-from .Service.SetService import SetService
 from .constants import *
+from .model.StorageBuilder import StorageBuilder
+from .service.ClearService import ClearService
+from .service.DeleteService import DeleteService
+from .service.GetService import GetService
+from .service.SetService import SetService
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 

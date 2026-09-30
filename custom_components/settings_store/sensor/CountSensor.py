@@ -1,8 +1,8 @@
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.const import EntityCategory
 
-from ..Utils.Database import Database
 from ..constants import *
+from ..utils.Database import Database
 
 
 class CountSensor(SensorEntity):

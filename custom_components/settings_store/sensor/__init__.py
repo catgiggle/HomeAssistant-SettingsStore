@@ -1,7 +1,7 @@
 from homeassistant.helpers.device_registry import DeviceInfo
 
-from .Sensor.CountSensor import CountSensor
-from .constants import *
+from .CountSensor import CountSensor
+from ..constants import *
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
