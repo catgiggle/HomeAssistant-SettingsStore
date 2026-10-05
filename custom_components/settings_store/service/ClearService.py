@@ -25,7 +25,8 @@ class ClearService:
         await self._hass.async_add_executor_job(self._execute, sensor.path)
         sensor.refresh()
 
-    def _execute(self, path):
+    @staticmethod
+    def _execute(path):
         with Database.connect(path) as connection:
             connection.execute('''
                 DELETE FROM settings_store

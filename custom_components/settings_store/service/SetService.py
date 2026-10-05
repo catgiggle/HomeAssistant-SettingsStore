@@ -34,7 +34,8 @@ class SetService:
         )
         sensor.refresh()
 
-    def _execute(self, path, scope, name, value):
+    @staticmethod
+    def _execute(path, scope, name, value):
         with Database.connect(path) as connection:
             connection.execute('''
                 INSERT INTO settings_store (scope, name, value)

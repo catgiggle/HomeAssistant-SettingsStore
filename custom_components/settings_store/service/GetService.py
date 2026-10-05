@@ -36,7 +36,8 @@ class GetService:
             "value": result[0] if result else None
         }
 
-    def _execute(self, path, scope, name):
+    @staticmethod
+    def _execute(path, scope, name):
         with Database.connect(path) as connection:
             return connection.execute('''
                 SELECT value

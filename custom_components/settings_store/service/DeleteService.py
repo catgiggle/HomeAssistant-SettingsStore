@@ -32,7 +32,8 @@ class DeleteService:
         )
         sensor.refresh()
 
-    def _execute(self, path, scope, name):
+    @staticmethod
+    def _execute(path, scope, name):
         with Database.connect(path) as connection:
             connection.execute('''
                 DELETE FROM settings_store
