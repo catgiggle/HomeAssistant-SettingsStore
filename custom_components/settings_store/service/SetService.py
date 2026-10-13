@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 
@@ -36,10 +38,13 @@ class SetService:
 
     @staticmethod
     def _execute(path, scope, name, value):
+        now = datetime.now().strftime(DATETIME_FORMAT)
         with Database.connect(path) as connection:
             connection.execute('''
-                INSERT INTO settings_store (scope, name, value)
-                VALUES (?, ?, ?)
+                INSERT INTO settings_store (scope, name, value, createdAt, modifiedAt)
+                VALUES (?, ?, ?, ?, ?)
                 ON CONFLICT (scope, name)
-                DO UPDATE SET value = excluded.value
-            ''', (scope, name, value))
+                DO UPDATE SET
+                    value = excluded.value,
+                    modifiedAt = excluded.modifiedAt
+            ''', (scope, name, value, now, now))

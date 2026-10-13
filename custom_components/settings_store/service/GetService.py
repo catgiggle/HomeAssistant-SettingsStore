@@ -33,14 +33,18 @@ class GetService:
         )
 
         return {
-            "value": result[0] if result else None
+            FIELD_VALUE: result[0],
+            FIELD_CREATED_AT: result[1],
+            FIELD_MODIFIED_AT: result[2],
+        } if result else {
+            None
         }
 
     @staticmethod
     def _execute(path, scope, name):
         with Database.connect(path) as connection:
             return connection.execute('''
-                SELECT value
+                SELECT value, createdAt, modifiedAt
                 FROM settings_store
                 WHERE scope = ? AND name = ?
             ''', (scope, name)).fetchone()

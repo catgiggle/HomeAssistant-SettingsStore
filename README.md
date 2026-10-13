@@ -49,10 +49,11 @@ You can add **multiple instances** of this integration. Each instance represents
 
 - Persistent key-value storage backed by SQLite (`.storage/settings_store/<name>.db`)
 - Grouping of settings using scopes (namespaces) and keys
+- Automatic tracking of creation (`created_at`) and modification (`modified_at`) timestamps for each entry
 - No need to create throwaway helper entities (`input_*`, dummy switches/sensors) just to store state
 - Atomic upsert operations (insert or update on key conflict)
 - Diagnostic sensor reporting total stored entries count
-- Response data support in the `get` service for use in templates, scripts, and automations
+- Response data support in `get` and `list` services for direct use in automations, scripts, and templates
 - Ability to delete individual entries or clear the entire store
 - Isolated storage per configured instance
 
@@ -65,6 +66,9 @@ Each configured instance creates the following diagnostic sensor:
 - `Entries`: Displays the current total number of entries stored
   in the instance's database. This sensor automatically updates whenever records are created, updated, deleted or
   cleared. Its `entity_id` is passed as a target parameter to the integration's services.
+  - Attributes:
+    - `created_at`: Timestamp of the most recently created record (`YYYY-MM-DD HH:MM:SS` or `null`).
+    - `modified_at`: Timestamp of the most recently modified record (`YYYY-MM-DD HH:MM:SS` or `null`).
 
 ## Services
 
@@ -83,7 +87,7 @@ Sets or updates a value for a specific scope and name in the store. If the entry
 
 ### `settings_store.get`
 
-Retrieves the stored value for a given scope and name. Supports returning service response data.
+Retrieves the stored value and timestamps for a given scope and name. Supports returning service response data.
 
 | Field       | Description                                                                 |
 |-------------|-----------------------------------------------------------------------------|
@@ -93,7 +97,57 @@ Retrieves the stored value for a given scope and name. Supports returning servic
 
 #### Response
 
-Returns the stored value string or `null` if the key does not exist.
+Returns a dictionary containing the stored value and timestamps:
+
+```json
+{
+  "value": "15",
+  "created_at": "2026-10-12 14:00:00",
+  "modified_at": "2026-10-12 14:30:00"
+}
+```
+
+- `value`: Stored value string or `null` if the key does not exist.
+- `created_at`: Creation timestamp formatted as `YYYY-MM-DD HH:MM:SS` (or `null` if not found).
+- `modified_at`: Last modification timestamp formatted as `YYYY-MM-DD HH:MM:SS` (or `null` if not found).
+
+### `settings_store.list`
+
+Retrieves all stored entries for a given scope, ordered alphabetically by key name. Supports returning service response data.
+
+| Field       | Description                                                                 |
+|-------------|-----------------------------------------------------------------------------|
+| `entity_id` | Entity ID of the Settings Store sensor (identifies target storage instance) |
+| `scope`     | Scope / namespace identifier (optional, defaults to `default`)              |
+
+#### Response
+
+Returns a dictionary containing a `list` array of stored entries:
+
+```json
+{
+  "list": [
+    {
+      "name": "interval_minutes",
+      "value": "30",
+      "created_at": "2026-10-12 10:00:00",
+      "modified_at": "2026-10-12 10:00:00"
+    },
+    {
+      "name": "last_run_duration",
+      "value": "15",
+      "created_at": "2026-10-12 14:00:00",
+      "modified_at": "2026-10-12 14:30:00"
+    }
+  ]
+}
+```
+
+- `list`: Array of entries for the requested scope (ordered alphabetically by `name`).
+  - `name`: Setting key name.
+  - `value`: Stored value string.
+  - `created_at`: Creation timestamp formatted as `YYYY-MM-DD HH:MM:SS`.
+  - `modified_at`: Last modification timestamp formatted as `YYYY-MM-DD HH:MM:SS`.
 
 ### `settings_store.delete`
 
@@ -138,7 +192,24 @@ response_variable: saved_setting
 
 action: notify.persistent_notification
 data:
-  message: "Last duration was {{ saved_setting.value }} minutes."
+  message: "Last duration was {{ saved_setting.value }} minutes (modified at {{ saved_setting.modified_at }})."
+```
+
+### Listing Entries in an Automation or Script
+
+```yaml
+action: settings_store.list
+data:
+  entity_id: sensor.settings_store_main_entries
+  scope: irrigation
+response_variable: irrigation_settings
+
+action: notify.persistent_notification
+data:
+  message: >
+    {% for entry in irrigation_settings.list %}
+      {{ entry.name }}: {{ entry.value }} (created: {{ entry.created_at }}, modified: {{ entry.modified_at }})
+    {% endfor %}
 ```
 
 ### Deleting a Setting

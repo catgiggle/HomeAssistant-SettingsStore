@@ -18,21 +18,25 @@ class CountSensor(SensorEntity):
         self._attr_device_info = deviceInfo
         self._attr_entity_category = EntityCategory.DIAGNOSTIC
 
+        self._attr_native_value = 0
+        self._extra_created_at = None
+        self._extra_modified_at = None
+
+        self._update_data()
+
     @property
     def path(self):
         return self._storagePath
 
     @property
-    def native_value(self):
-        with Database.connect(self._storagePath) as connection:
-            result = connection.execute('''
-                SELECT COUNT(*)
-                FROM settings_store
-            ''').fetchone()
-
-            return result[0]
+    def extra_state_attributes(self):
+        return {
+            'latest_created_at': self._extra_created_at,
+            'latest_modified_at': self._extra_modified_at,
+        }
 
     def refresh(self):
+        self._update_data()
         self.async_write_ha_state()
 
     async def async_added_to_hass(self):
@@ -40,3 +44,15 @@ class CountSensor(SensorEntity):
 
     async def async_will_remove_from_hass(self):
         self._hass.data[DOMAIN][SENSOR_ENTITIES].pop(self.entity_id, None)
+
+    def _update_data(self):
+        with Database.connect(self._storagePath) as connection:
+            result = connection.execute('''
+                SELECT COUNT(*), MAX(createdAt), MAX(modifiedAt)
+                FROM settings_store
+            ''').fetchone()
+
+            if result:
+                self._attr_native_value = result[0]
+                self._extra_created_at = result[1]
+                self._extra_modified_at = result[2]
