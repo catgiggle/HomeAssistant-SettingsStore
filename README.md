@@ -67,8 +67,9 @@ Each configured instance creates the following diagnostic sensor:
   in the instance's database. This sensor automatically updates whenever records are created, updated, deleted or
   cleared. Its `entity_id` is passed as a target parameter to the integration's services.
   - Attributes:
-    - `created_at`: Timestamp of the most recently created record (`YYYY-MM-DD HH:MM:SS` or `null`).
-    - `modified_at`: Timestamp of the most recently modified record (`YYYY-MM-DD HH:MM:SS` or `null`).
+    - `latest_store_changed_at`: Timestamp of the most recent change to the store (create, update, delete or clear) (`YYYY-MM-DD HH:MM:SS` or `null`).
+    - `latest_entry_created_at`: Timestamp of the most recently created entry (`YYYY-MM-DD HH:MM:SS` or `null`).
+    - `latest_entry_modified_at`: Timestamp of the most recently modified entry (`YYYY-MM-DD HH:MM:SS` or `null`).
 
 ## Services
 
