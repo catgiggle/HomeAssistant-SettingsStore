@@ -33,11 +33,9 @@ class GetService:
         )
 
         return {
-            FIELD_VALUE: result[0],
-            FIELD_CREATED_AT: result[1],
-            FIELD_MODIFIED_AT: result[2],
-        } if result else {
-            None
+            FIELD_VALUE: result[0] if result else None,
+            FIELD_CREATED_AT: result[1] if result else None,
+            FIELD_MODIFIED_AT: result[2] if result else None,
         }
 
     @staticmethod
