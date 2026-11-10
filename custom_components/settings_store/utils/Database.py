@@ -7,6 +7,8 @@ class Database:
     @contextmanager
     def connect(path):
         connection = sqlite3.connect(path)
+        connection.execute("PRAGMA journal_mode=WAL")
+        connection.execute("PRAGMA synchronous=NORMAL")
 
         try:
             cursor = connection.cursor()

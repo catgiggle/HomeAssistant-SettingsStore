@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.const import EntityCategory
 
@@ -21,9 +19,7 @@ class CountSensor(SensorEntity):
         self._attr_entity_category = EntityCategory.DIAGNOSTIC
 
         self._attr_native_value = 0
-        self._latest_store_changed_at = None
-        self._latest_entry_created_at = None
-        self._latest_entry_modified_at = None
+        self._scopeAttributes = {}
 
         self._update_data()
 
@@ -33,11 +29,7 @@ class CountSensor(SensorEntity):
 
     @property
     def extra_state_attributes(self):
-        return {
-            'latest_store_changed_at': self._latest_store_changed_at,
-            'latest_entry_created_at': self._latest_entry_created_at,
-            'latest_entry_modified_at': self._latest_entry_modified_at,
-        }
+        return self._scopeAttributes
 
     def refresh(self):
         self._update_data()
@@ -51,13 +43,19 @@ class CountSensor(SensorEntity):
 
     def _update_data(self):
         with Database.connect(self._storagePath) as connection:
-            result = connection.execute('''
-                SELECT COUNT(*), MAX(createdAt), MAX(modifiedAt)
+            stateResult = connection.execute('''
+                SELECT COUNT(*)
                 FROM settings_store
             ''').fetchone()
 
-        if result:
-            self._attr_native_value = result[0]
-            self._latest_store_changed_at = datetime.now().strftime(DATETIME_FORMAT)
-            self._latest_entry_created_at = result[1]
-            self._latest_entry_modified_at = result[2]
+            scopesResult = connection.execute('''
+                SELECT scope, MAX(modifiedAt)
+                FROM settings_store
+                GROUP BY scope
+            ''').fetchall()
+
+        self._attr_native_value = stateResult[0] if stateResult else None
+        self._scopeAttributes = {
+            f"scope_{row[0].replace('.', '_').replace(' ', '_')}": row[1]
+            for row in scopesResult
+        }
