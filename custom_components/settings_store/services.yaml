@@ -42,6 +42,18 @@ list:
       selector:
         text:
 
+all:
+  name: All values
+  description: Retrieves all stored entries across all scopes from the settings store.
+  fields:
+    entity_id:
+      required: true
+      description: Entity ID of the Settings Store sensor (identifies target storage instance).
+      example: "sensor.settings_store_main_entries"
+      selector:
+        entity:
+          integration: settings_store
+
 set:
   name: Set value
   description: Sets or updates a value for a specific scope and name in the settings store.

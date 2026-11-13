@@ -19,7 +19,7 @@ class CountSensor(SensorEntity):
         self._attr_entity_category = EntityCategory.DIAGNOSTIC
 
         self._attr_native_value = 0
-        self._scopeAttributes = {}
+        self._custom_attributes = {}
 
         self._update_data()
 
@@ -29,7 +29,7 @@ class CountSensor(SensorEntity):
 
     @property
     def extra_state_attributes(self):
-        return self._scopeAttributes
+        return self._custom_attributes
 
     def refresh(self):
         self._update_data()
@@ -44,18 +44,26 @@ class CountSensor(SensorEntity):
     def _update_data(self):
         with Database.connect(self._storagePath) as connection:
             stateResult = connection.execute('''
-                SELECT COUNT(*)
+                SELECT COUNT(*), MIN(createdAt), MAX(modifiedAt)
                 FROM settings_store
             ''').fetchone()
 
             scopesResult = connection.execute('''
-                SELECT scope, MAX(modifiedAt)
+                SELECT scope, MIN(createdAt), MAX(modifiedAt)
                 FROM settings_store
                 GROUP BY scope
             ''').fetchall()
 
         self._attr_native_value = stateResult[0] if stateResult else None
-        self._scopeAttributes = {
-            f"scope_{row[0].replace('.', '_').replace(' ', '_')}": row[1]
-            for row in scopesResult
+        self._custom_attributes = {
+            'store_created_at': stateResult[1] if stateResult else None,
+            'store_modified_at': stateResult[2] if stateResult else None,
+            **{
+                f"{row[0].replace('.', '_').replace(' ', '_')}_created_at": row[1]
+                for row in scopesResult
+            },
+            **{
+                f"{row[0].replace('.', '_').replace(' ', '_')}_modified_at": row[2]
+                for row in scopesResult
+            }
         }

@@ -52,8 +52,8 @@ You can add **multiple instances** of this integration. Each instance represents
 - Automatic tracking of creation (`created_at`) and modification (`modified_at`) timestamps for each entry
 - No need to create throwaway helper entities (`input_*`, dummy switches/sensors) just to store state
 - Atomic upsert operations (insert or update on key conflict)
-- Diagnostic sensor reporting total stored entries count
-- Response data support in `get` and `list` services for direct use in automations, scripts, and templates
+- Diagnostic sensor reporting total stored entries count along with store-wide and per-scope timestamps
+- Response data support in `get`, `list`, and `all` services for direct use in automations, scripts, and templates
 - Ability to delete individual entries or clear the entire store
 - Isolated storage per configured instance
 
@@ -67,9 +67,10 @@ Each configured instance creates the following diagnostic sensor:
   in the instance's database. This sensor automatically updates whenever records are created, updated, deleted or
   cleared. Its `entity_id` is passed as a target parameter to the integration's services.
   - Attributes:
-    - `latest_store_changed_at`: Timestamp of the most recent change to the store (create, update, delete or clear) (`YYYY-MM-DD HH:MM:SS` or `null`).
-    - `latest_entry_created_at`: Timestamp of the most recently created entry (`YYYY-MM-DD HH:MM:SS` or `null`).
-    - `latest_entry_modified_at`: Timestamp of the most recently modified entry (`YYYY-MM-DD HH:MM:SS` or `null`).
+    - `store_created_at`: Timestamp of the first entry created in the store (`YYYY-MM-DD HH:MM:SS` or `null`).
+    - `store_modified_at`: Timestamp of the most recently modified entry across the entire store (`YYYY-MM-DD HH:MM:SS` or `null`).
+    - `<scope>_created_at`: Timestamp of the first entry created in a given scope (`YYYY-MM-DD HH:MM:SS`).
+    - `<scope>_modified_at`: Timestamp of the most recently modified entry for a given scope (`YYYY-MM-DD HH:MM:SS`).
 
 ## Services
 
@@ -150,6 +151,46 @@ Returns a dictionary containing a `list` array of stored entries:
   - `created_at`: Creation timestamp formatted as `YYYY-MM-DD HH:MM:SS`.
   - `modified_at`: Last modification timestamp formatted as `YYYY-MM-DD HH:MM:SS`.
 
+### `settings_store.all`
+
+Retrieves all stored entries across all scopes, ordered alphabetically by scope and key name. Supports returning service response data.
+
+| Field       | Description                                                                 |
+|-------------|-----------------------------------------------------------------------------|
+| `entity_id` | Entity ID of the Settings Store sensor (identifies target storage instance) |
+
+#### Response
+
+Returns a dictionary containing a `list` array of stored entries:
+
+```json
+{
+  "list": [
+    {
+      "name": "last_run_duration",
+      "scope": "irrigation",
+      "value": "15",
+      "created_at": "2026-10-12 14:00:00",
+      "modified_at": "2026-10-12 14:30:00"
+    },
+    {
+      "name": "threshold",
+      "scope": "climate",
+      "value": "22",
+      "created_at": "2026-10-13 08:00:00",
+      "modified_at": "2026-10-13 08:00:00"
+    }
+  ]
+}
+```
+
+- `list`: Array of all entries across all scopes (ordered alphabetically by `scope`, then by `name`).
+  - `scope`: Scope / namespace identifier.
+  - `name`: Setting key name.
+  - `value`: Stored value string.
+  - `created_at`: Creation timestamp formatted as `YYYY-MM-DD HH:MM:SS`.
+  - `modified_at`: Last modification timestamp formatted as `YYYY-MM-DD HH:MM:SS`.
+
 ### `settings_store.delete`
 
 Deletes a specific setting identified by scope and name.
@@ -221,6 +262,22 @@ data:
   entity_id: sensor.settings_store_main_entries
   scope: irrigation
   name: last_run_duration
+```
+
+### Retrieving All Entries Across Scopes
+
+```yaml
+action: settings_store.all
+data:
+  entity_id: sensor.settings_store_main_entries
+response_variable: all_settings
+
+action: notify.persistent_notification
+data:
+  message: >
+    {% for entry in all_settings.list %}
+      [{{ entry.scope }}] {{ entry.name }}: {{ entry.value }} (modified: {{ entry.modified_at }})
+    {% endfor %}
 ```
 
 ### Clearing All Settings

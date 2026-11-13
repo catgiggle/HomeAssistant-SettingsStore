@@ -2,6 +2,7 @@ from homeassistant.helpers import config_validation as cv
 
 from .constants import *
 from .model.StorageBuilder import StorageBuilder
+from .service.AllService import AllService
 from .service.ClearService import ClearService
 from .service.DeleteService import DeleteService
 from .service.GetService import GetService
@@ -17,6 +18,7 @@ async def async_setup(hass, _config):
     SetService(hass).register()
     GetService(hass).register()
     ListService(hass).register()
+    AllService(hass).register()
     DeleteService(hass).register()
     ClearService(hass).register()
 
