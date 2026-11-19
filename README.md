@@ -99,16 +99,18 @@ Retrieves the stored value and timestamps for a given scope and name. Supports r
 
 #### Response
 
-Returns a dictionary containing the stored value and timestamps:
+Returns a dictionary containing the entry ID, stored value and timestamps:
 
 ```json
 {
+  "id": 1,
   "value": "15",
   "created_at": "2026-10-12 14:00:00",
   "modified_at": "2026-10-12 14:30:00"
 }
 ```
 
+- `id`: Entry ID or `null` if the key does not exist.
 - `value`: Stored value string or `null` if the key does not exist.
 - `created_at`: Creation timestamp formatted as `YYYY-MM-DD HH:MM:SS` (or `null` if not found).
 - `modified_at`: Last modification timestamp formatted as `YYYY-MM-DD HH:MM:SS` (or `null` if not found).
@@ -130,12 +132,14 @@ Returns a dictionary containing a `list` array of stored entries:
 {
   "list": [
     {
+      "id": 1,
       "name": "interval_minutes",
       "value": "30",
       "created_at": "2026-10-12 10:00:00",
       "modified_at": "2026-10-12 10:00:00"
     },
     {
+      "id": 2,
       "name": "last_run_duration",
       "value": "15",
       "created_at": "2026-10-12 14:00:00",
@@ -146,6 +150,7 @@ Returns a dictionary containing a `list` array of stored entries:
 ```
 
 - `list`: Array of entries for the requested scope (ordered alphabetically by `name`).
+  - `id`: Entry ID.
   - `name`: Setting key name.
   - `value`: Stored value string.
   - `created_at`: Creation timestamp formatted as `YYYY-MM-DD HH:MM:SS`.
@@ -167,6 +172,7 @@ Returns a dictionary containing a `list` array of stored entries:
 {
   "list": [
     {
+      "id": 2,
       "name": "last_run_duration",
       "scope": "irrigation",
       "value": "15",
@@ -174,6 +180,7 @@ Returns a dictionary containing a `list` array of stored entries:
       "modified_at": "2026-10-12 14:30:00"
     },
     {
+      "id": 3,
       "name": "threshold",
       "scope": "climate",
       "value": "22",
@@ -185,6 +192,7 @@ Returns a dictionary containing a `list` array of stored entries:
 ```
 
 - `list`: Array of all entries across all scopes (ordered alphabetically by `scope`, then by `name`).
+  - `id`: Entry ID.
   - `scope`: Scope / namespace identifier.
   - `name`: Setting key name.
   - `value`: Stored value string.
@@ -200,6 +208,15 @@ Deletes a specific setting identified by scope and name.
 | `entity_id` | Entity ID of the Settings Store sensor (identifies target storage instance) |
 | `scope`     | Scope / namespace identifier (optional, defaults to `default`)              |
 | `name`      | Setting key name                                                            |
+
+### `settings_store.remove`
+
+Deletes a specific setting identified by its ID.
+
+| Field       | Description                                                                 |
+|-------------|-----------------------------------------------------------------------------|
+| `entity_id` | Entity ID of the Settings Store sensor (identifies target storage instance) |
+| `id`        | ID of the entry to remove                                                   |
 
 ### `settings_store.clear`
 

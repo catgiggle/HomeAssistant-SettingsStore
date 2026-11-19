@@ -2,13 +2,14 @@ NAME = 'Settings Store'
 DOMAIN = 'settings_store'
 PLATFORMS = ['sensor']
 AUTHOR = 'Damian Wójcik'
-VERSION = '0.2.4'
+VERSION = '0.2.5'
 
 CONFIG_DISPLAY_NAME = 'display_name'
 CONFIG_INTERNAL_NAME = 'internal_name'
 
 FIELD_CREATED_AT = 'created_at'
 FIELD_ENTITY_ID = 'entity_id'
+FIELD_ID = 'id'
 FIELD_LIST = 'list'
 FIELD_MODIFIED_AT = 'modified_at'
 FIELD_NAME = 'name'

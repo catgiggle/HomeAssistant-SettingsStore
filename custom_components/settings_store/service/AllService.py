@@ -31,11 +31,12 @@ class AllService:
         return {
             FIELD_LIST: [
                 {
-                    FIELD_NAME: row[0],
-                    FIELD_SCOPE: row[1],
-                    FIELD_VALUE: row[2],
-                    FIELD_CREATED_AT: row[3],
-                    FIELD_MODIFIED_AT: row[4],
+                    FIELD_ID: row[0],
+                    FIELD_NAME: row[1],
+                    FIELD_SCOPE: row[2],
+                    FIELD_VALUE: row[3],
+                    FIELD_CREATED_AT: row[4],
+                    FIELD_MODIFIED_AT: row[5],
                 }
                 for row in result
             ]
@@ -45,7 +46,7 @@ class AllService:
     def _execute(path):
         with Database.connect(path) as connection:
             return connection.execute('''
-                SELECT name, scope, value, createdAt, modifiedAt
+                SELECT id, name, scope, value, createdAt, modifiedAt
                 FROM settings_store
                 ORDER BY scope ASC, name ASC
             ''').fetchall()

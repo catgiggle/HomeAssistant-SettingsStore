@@ -110,6 +110,26 @@ delete:
       selector:
         text:
 
+remove:
+  name: Remove value
+  description: Deletes a specific setting identified by its ID from the store.
+  fields:
+    entity_id:
+      required: true
+      description: Entity ID of the Settings Store sensor (identifies target storage instance).
+      example: "sensor.settings_store_main_entries"
+      selector:
+        entity:
+          integration: settings_store
+    id:
+      required: true
+      description: ID of the setting to remove.
+      example: 1
+      selector:
+        number:
+          min: 1
+          mode: box
+
 clear:
   name: Clear all values
   description: Removes all stored entries from the instance's database.
