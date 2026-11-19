@@ -1,3 +1,5 @@
+import hashlib
+
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.const import EntityCategory
 
@@ -5,15 +7,15 @@ from ..constants import *
 from ..utils.Database import Database
 
 
-class CountSensor(SensorEntity):
+class StoreSensor(SensorEntity):
     _attr_has_entity_name = True
-    _attr_name = 'Entries'
+    _attr_name = 'Store'
 
     def __init__(self, hass, configName, storagePath, deviceInfo):
         self._hass = hass
         self._storagePath = storagePath
 
-        self._attr_unique_id = f"{DOMAIN}_{configName}_entries"
+        self._attr_unique_id = f"{DOMAIN}_{configName}_store"
         self._attr_suggested_object_id = self._attr_unique_id
         self._attr_device_info = deviceInfo
         self._attr_entity_category = EntityCategory.DIAGNOSTIC
@@ -58,6 +60,11 @@ class CountSensor(SensorEntity):
         self._custom_attributes = {
             'store_created_at': stateResult[1] if stateResult else None,
             'store_modified_at': stateResult[2] if stateResult else None,
+            'storage_hash': hashlib.md5(':'.join(map(str, [
+                stateResult[0] if stateResult else 0,
+                stateResult[1] if stateResult else '',
+                stateResult[2] if stateResult else '',
+            ])).encode()).hexdigest(),
             **{
                 key: value
                 for scopeSummary in scopesResult

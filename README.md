@@ -3,8 +3,7 @@
 This Home Assistant integration provides persistent, key-value storage backed by SQLite for automations, scripts, and
 integrations.
 
-It allows you to store, update, retrieve, and delete arbitrary settings organized by **scopes** (namespaces) and
-**keys**, persisting them safely across Home Assistant restarts.
+It allows you to store, update, retrieve, and delete arbitrary settings organized by **scopes** (namespaces) and **keys**, persisting them safely across Home Assistant restarts.
 
 It is especially useful when you want to:
 
@@ -66,11 +65,11 @@ Each configured instance creates the following diagnostic sensor:
 - `Entries`: Displays the current total number of entries stored
   in the instance's database. This sensor automatically updates whenever records are created, updated, deleted or
   cleared. Its `entity_id` is passed in the `store` parameter to the integration's services.
-  - Attributes:
-    - `store_created_at`: Timestamp of the first entry created in the store (`YYYY-MM-DD HH:MM:SS` or `null`).
-    - `store_modified_at`: Timestamp of the most recently modified entry across the entire store (`YYYY-MM-DD HH:MM:SS` or `null`).
-    - `<scope>_created_at`: Timestamp of the first entry created in a given scope (`YYYY-MM-DD HH:MM:SS`).
-    - `<scope>_modified_at`: Timestamp of the most recently modified entry for a given scope (`YYYY-MM-DD HH:MM:SS`).
+    - Attributes:
+        - `store_created_at`: Timestamp of the first entry created in the store (`YYYY-MM-DD HH:MM:SS` or `null`).
+        - `store_modified_at`: Timestamp of the most recently modified entry across the entire store (`YYYY-MM-DD HH:MM:SS` or `null`).
+        - `<scope>_created_at`: Timestamp of the first entry created in a given scope (`YYYY-MM-DD HH:MM:SS`).
+        - `<scope>_modified_at`: Timestamp of the most recently modified entry for a given scope (`YYYY-MM-DD HH:MM:SS`).
 
 ## Services
 
@@ -82,24 +81,24 @@ Sets or updates a value for a specific scope and name in the store. If the entry
 Alternatively, provide `id` to update an existing entry. An unknown `id` does not create an entry.
 Updating by `id` changes the value and modification timestamp; the entry's name and scope remain unchanged.
 
-| Field       | Description                                                                 |
-|-------------|-----------------------------------------------------------------------------|
-| `store` | Entity ID of the Settings Store sensor (identifies target storage instance) |
-| `id`  | Optional ID of the entry to update; cannot be combined with `scope` or `name` |
-| `scope`     | Scope (defaults to `default` when updating by name) |
-| `name`      | Setting key name (required without `id`)          |
-| `value`     | Value to store                                                              |
+| Field   | Description                                                                   |
+|---------|-------------------------------------------------------------------------------|
+| `store` | Entity ID of the Settings Store sensor (identifies target storage instance)   |
+| `id`    | Optional ID of the entry to update; cannot be combined with `scope` or `name` |
+| `scope` | Scope (defaults to `default` when updating by name)                           |
+| `name`  | Setting key name (required without `id`)                                      |
+| `value` | Value to store                                                                |
 
 ### `settings_store.get`
 
 Retrieves the stored value and timestamps by `id` or by scope and name. Supports returning service response data.
 
-| Field       | Description                                                                 |
-|-------------|-----------------------------------------------------------------------------|
+| Field   | Description                                                                 |
+|---------|-----------------------------------------------------------------------------|
 | `store` | Entity ID of the Settings Store sensor (identifies target storage instance) |
-| `id`        | Optional entry ID; cannot be combined with `scope` or `name`                |
-| `scope`     | Scope (defaults to `default` when retrieving by name)                       |
-| `name`      | Setting key name (required without `id`)                                    |
+| `id`    | Optional entry ID; cannot be combined with `scope` or `name`                |
+| `scope` | Scope (defaults to `default` when retrieving by name)                       |
+| `name`  | Setting key name (required without `id`)                                    |
 
 #### Response
 
@@ -123,10 +122,10 @@ Returns a dictionary containing the entry ID, stored value and timestamps:
 
 Retrieves all stored entries for a given scope, ordered alphabetically by key name. Supports returning service response data.
 
-| Field       | Description                                                                 |
-|-------------|-----------------------------------------------------------------------------|
+| Field   | Description                                                                 |
+|---------|-----------------------------------------------------------------------------|
 | `store` | Entity ID of the Settings Store sensor (identifies target storage instance) |
-| `scope`     | Scope / namespace identifier (optional, defaults to `default`)              |
+| `scope` | Scope / namespace identifier (optional, defaults to `default`)              |
 
 #### Response
 
@@ -154,18 +153,18 @@ Returns a dictionary containing a `list` array of stored entries:
 ```
 
 - `list`: Array of entries for the requested scope (ordered alphabetically by `name`).
-  - `id`: Entry ID.
-  - `name`: Setting key name.
-  - `value`: Stored value string.
-  - `created_at`: Creation timestamp formatted as `YYYY-MM-DD HH:MM:SS`.
-  - `modified_at`: Last modification timestamp formatted as `YYYY-MM-DD HH:MM:SS`.
+    - `id`: Entry ID.
+    - `name`: Setting key name.
+    - `value`: Stored value string.
+    - `created_at`: Creation timestamp formatted as `YYYY-MM-DD HH:MM:SS`.
+    - `modified_at`: Last modification timestamp formatted as `YYYY-MM-DD HH:MM:SS`.
 
 ### `settings_store.all`
 
 Retrieves all stored entries across all scopes, ordered alphabetically by scope and key name. Supports returning service response data.
 
-| Field       | Description                                                                 |
-|-------------|-----------------------------------------------------------------------------|
+| Field   | Description                                                                 |
+|---------|-----------------------------------------------------------------------------|
 | `store` | Entity ID of the Settings Store sensor (identifies target storage instance) |
 
 #### Response
@@ -196,30 +195,30 @@ Returns a dictionary containing a `list` array of stored entries:
 ```
 
 - `list`: Array of all entries across all scopes (ordered alphabetically by `scope`, then by `name`).
-  - `id`: Entry ID.
-  - `scope`: Scope / namespace identifier.
-  - `name`: Setting key name.
-  - `value`: Stored value string.
-  - `created_at`: Creation timestamp formatted as `YYYY-MM-DD HH:MM:SS`.
-  - `modified_at`: Last modification timestamp formatted as `YYYY-MM-DD HH:MM:SS`.
+    - `id`: Entry ID.
+    - `scope`: Scope / namespace identifier.
+    - `name`: Setting key name.
+    - `value`: Stored value string.
+    - `created_at`: Creation timestamp formatted as `YYYY-MM-DD HH:MM:SS`.
+    - `modified_at`: Last modification timestamp formatted as `YYYY-MM-DD HH:MM:SS`.
 
 ### `settings_store.delete`
 
 Deletes a specific setting identified by ID or by scope and name. An unknown ID has no effect.
 
-| Field       | Description                                                                 |
-|-------------|-----------------------------------------------------------------------------|
+| Field   | Description                                                                 |
+|---------|-----------------------------------------------------------------------------|
 | `store` | Entity ID of the Settings Store sensor (identifies target storage instance) |
-| `id`  | Optional entry ID; cannot be combined with `scope` or `name`                |
-| `scope`     | Scope / namespace identifier (optional, defaults to `default` without `id`) |
-| `name`      | Setting key name (required without `id`)                              |
+| `id`    | Optional entry ID; cannot be combined with `scope` or `name`                |
+| `scope` | Scope / namespace identifier (optional, defaults to `default` without `id`) |
+| `name`  | Setting key name (required without `id`)                                    |
 
 ### `settings_store.clear`
 
 Removes all stored entries from the instance's database.
 
-| Field       | Description                                                                 |
-|-------------|-----------------------------------------------------------------------------|
+| Field   | Description                                                                 |
+|---------|-----------------------------------------------------------------------------|
 | `store` | Entity ID of the Settings Store sensor (identifies target storage instance) |
 
 ## Usage Examples
