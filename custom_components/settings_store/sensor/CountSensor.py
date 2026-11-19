@@ -49,7 +49,7 @@ class CountSensor(SensorEntity):
             ''').fetchone()
 
             scopesResult = connection.execute('''
-                SELECT scope, MIN(createdAt), MAX(modifiedAt)
+                SELECT scope, COUNT(*), MIN(createdAt), MAX(modifiedAt)
                 FROM settings_store
                 GROUP BY scope
             ''').fetchall()
@@ -59,11 +59,13 @@ class CountSensor(SensorEntity):
             'store_created_at': stateResult[1] if stateResult else None,
             'store_modified_at': stateResult[2] if stateResult else None,
             **{
-                f"{row[0].replace('.', '_').replace(' ', '_')}_created_at": row[1]
-                for row in scopesResult
-            },
-            **{
-                f"{row[0].replace('.', '_').replace(' ', '_')}_modified_at": row[2]
-                for row in scopesResult
+                key: value
+                for scopeSummary in scopesResult
+                for scopePrefix in [scopeSummary[0].replace('.', '_').replace(' ', '_')]
+                for key, value in [
+                    (f"{scopePrefix}_count", scopeSummary[1]),
+                    (f"{scopePrefix}_created_at", scopeSummary[2]),
+                    (f"{scopePrefix}_modified_at", scopeSummary[3])
+                ]
             }
         }

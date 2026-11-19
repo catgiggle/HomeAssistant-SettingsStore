@@ -45,16 +45,18 @@ class GetService:
 
         return {
             FIELD_ID: result[0] if result else None,
-            FIELD_VALUE: result[1] if result else None,
-            FIELD_CREATED_AT: result[2] if result else None,
-            FIELD_MODIFIED_AT: result[3] if result else None,
+            FIELD_NAME: result[1] if result else None,
+            FIELD_SCOPE: result[2] if result else None,
+            FIELD_VALUE: result[3] if result else None,
+            FIELD_CREATED_AT: result[4] if result else None,
+            FIELD_MODIFIED_AT: result[5] if result else None,
         }
 
     @staticmethod
     def _execute_by_id(path, entry_id):
         with Database.connect(path) as connection:
             return connection.execute('''
-                SELECT id, value, createdAt, modifiedAt
+                SELECT id, name, scope, value, createdAt, modifiedAt
                 FROM settings_store
                 WHERE id = ?
             ''', (entry_id,)).fetchone()
@@ -63,7 +65,7 @@ class GetService:
     def _execute_by_name(path, name, scope):
         with Database.connect(path) as connection:
             return connection.execute('''
-                SELECT id, value, createdAt, modifiedAt
+                SELECT id, name, scope, value, createdAt, modifiedAt
                 FROM settings_store
                 WHERE scope = ? AND name = ?
             ''', (scope, name)).fetchone()

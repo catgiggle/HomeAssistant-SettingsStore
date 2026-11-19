@@ -35,9 +35,10 @@ class ListService:
                 {
                     FIELD_ID: row[0],
                     FIELD_NAME: row[1],
-                    FIELD_VALUE: row[2],
-                    FIELD_CREATED_AT: row[3],
-                    FIELD_MODIFIED_AT: row[4],
+                    FIELD_SCOPE: row[2],
+                    FIELD_VALUE: row[3],
+                    FIELD_CREATED_AT: row[4],
+                    FIELD_MODIFIED_AT: row[5],
                 }
                 for row in result
             ]
@@ -47,7 +48,7 @@ class ListService:
     def _execute(path, scope):
         with Database.connect(path) as connection:
             return connection.execute('''
-                SELECT id, name, value, createdAt, modifiedAt
+                SELECT id, name, scope, value, createdAt, modifiedAt
                 FROM settings_store
                 WHERE scope = ?
                 ORDER BY name ASC
