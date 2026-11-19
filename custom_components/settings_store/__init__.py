@@ -6,6 +6,7 @@ from .service.ClearService import ClearService
 from .service.DeleteService import DeleteService
 from .service.GetService import GetService
 from .service.ListService import ListService
+from .service.PatchService import PatchService
 from .service.SetService import SetService
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
@@ -15,6 +16,7 @@ async def async_setup(hass, _config):
     await _createRootConfig(hass)
 
     SetService(hass).register()
+    PatchService(hass).register()
     GetService(hass).register()
     ListService(hass).register()
     DeleteService(hass).register()

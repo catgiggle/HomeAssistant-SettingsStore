@@ -91,6 +91,18 @@ Updating by `id` changes the value and modification timestamp; the entry's name 
 | `name`  | Setting key name (required without `id`)                                      |
 | `value` | Value to store                                                                |
 
+### `settings_store.patch`
+
+Partially updates a JSON value by scope and name, or by ID, merging properties without overwriting existing fields (JSON Merge Patch). If the entry does not exist, it is created. If either the existing or incoming value is not valid JSON, it falls back to replacing the value.
+
+| Field   | Description                                                                   |
+|---------|-------------------------------------------------------------------------------|
+| `store` | Entity ID of the Settings Store sensor (identifies target storage instance)   |
+| `id`    | Optional ID of the entry to patch; cannot be combined with `scope` or `name`  |
+| `scope` | Scope (defaults to `default` when updating by name)                           |
+| `name`  | Setting key name (required without `id`)                                      |
+| `value` | Value or JSON patch to merge                                                  |
+
 ### `settings_store.get`
 
 Retrieves the stored value and timestamps by `id` or by scope and name. Supports returning service response data.

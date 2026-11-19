@@ -87,6 +87,44 @@ set:
       selector:
         text:
 
+patch:
+  name: Patch value
+  description: Partially updates a JSON value by scope and name, or by ID, merging properties without overwriting existing fields.
+  fields:
+    store:
+      required: true
+      description: Entity ID of the Settings Store sensor (identifies target storage instance).
+      example: "sensor.settings_store_main_store"
+      selector:
+        entity:
+          integration: settings_store
+    id:
+      required: false
+      description: ID of the entry to patch; cannot be combined with scope or name.
+      example: 1
+      selector:
+        number:
+          min: 0
+          mode: box
+    name:
+      required: false
+      description: Setting key name; required when ID is not provided.
+      example: "last_run_duration"
+      selector:
+        text:
+    scope:
+      required: false
+      description: Scope / namespace; defaults to default when updating by name and cannot be used with ID.
+      example: "irrigation"
+      selector:
+        text:
+    value:
+      required: true
+      description: Value or JSON patch to merge.
+      example: '{"description": "New description"}'
+      selector:
+        text:
+
 delete:
   name: Delete value
   description: Deletes a setting by ID or by scope and name.
