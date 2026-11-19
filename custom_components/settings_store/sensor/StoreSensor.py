@@ -60,7 +60,7 @@ class StoreSensor(SensorEntity):
         self._custom_attributes = {
             'store_created_at': stateResult[1] if stateResult else None,
             'store_modified_at': stateResult[2] if stateResult else None,
-            'storage_hash': hashlib.md5(':'.join(map(str, [
+            'store_hash': hashlib.md5(':'.join(map(str, [
                 stateResult[0] if stateResult else 0,
                 stateResult[1] if stateResult else '',
                 stateResult[2] if stateResult else '',
