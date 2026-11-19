@@ -16,7 +16,7 @@ class ListService:
             self.handle,
             schema=vol.Schema({
                 vol.Required(FIELD_STORE): cv.entity_id,
-                vol.Optional(FIELD_SCOPE, default=DEFAULT_SCOPE): cv.string,
+                vol.Optional(FIELD_SCOPE): cv.string,
             }),
             supports_response=True
         )
@@ -24,11 +24,17 @@ class ListService:
     async def handle(self, request):
         sensor = self._hass.data[DOMAIN][SENSOR_ENTITIES][request.data[FIELD_STORE]]
 
-        result = await self._hass.async_add_executor_job(
-            self._execute,
-            sensor.path,
-            request.data[FIELD_SCOPE],
-        )
+        if request.data.get(FIELD_SCOPE) == '*':
+            result = await self._hass.async_add_executor_job(
+                self._execute_list_all,
+                sensor.path,
+            )
+        else:
+            result = await self._hass.async_add_executor_job(
+                self._execute_list_scope,
+                sensor.path,
+                request.data.get(FIELD_SCOPE, DEFAULT_SCOPE),
+            )
 
         return {
             FIELD_LIST: [
@@ -45,7 +51,16 @@ class ListService:
         }
 
     @staticmethod
-    def _execute(path, scope):
+    def _execute_list_all(path):
+        with Database.connect(path) as connection:
+            return connection.execute('''
+                SELECT id, name, scope, value, createdAt, modifiedAt
+                FROM settings_store
+                ORDER BY scope ASC, name ASC
+            ''').fetchall()
+
+    @staticmethod
+    def _execute_list_scope(path, scope):
         with Database.connect(path) as connection:
             return connection.execute('''
                 SELECT id, name, scope, value, createdAt, modifiedAt

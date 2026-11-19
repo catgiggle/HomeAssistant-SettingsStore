@@ -51,9 +51,9 @@ You can add **multiple instances** of this integration. Each instance represents
 - Automatic tracking of creation (`created_at`) and modification (`modified_at`) timestamps for each entry
 - No need to create throwaway helper entities (`input_*`, dummy switches/sensors) just to store state
 - Atomic upsert operations (insert or update on key conflict)
-- Diagnostic sensor reporting total stored entries count along with store-wide and per-scope timestamps
-- Response data support in `get`, `list`, and `all` services for direct use in automations, scripts, and templates
-- Ability to delete individual entries or clear the entire store
+- Diagnostic sensor reporting total stored entries count along with store-wide and per-scope metrics and timestamps
+- Response data support in `get` and `list` services for direct use in automations, scripts, and templates
+- Ability to delete individual entries or clear entries by scope or entire store
 - Isolated storage per configured instance
 
 ![features.png](docs/images/features.png)
@@ -62,12 +62,14 @@ You can add **multiple instances** of this integration. Each instance represents
 
 Each configured instance creates the following diagnostic sensor:
 
-- `Entries`: Displays the current total number of entries stored
+- `Store`: Displays the current total number of entries stored
   in the instance's database. This sensor automatically updates whenever records are created, updated, deleted or
   cleared. Its `entity_id` is passed in the `store` parameter to the integration's services.
     - Attributes:
         - `store_created_at`: Timestamp of the first entry created in the store (`YYYY-MM-DD HH:MM:SS` or `null`).
         - `store_modified_at`: Timestamp of the most recently modified entry across the entire store (`YYYY-MM-DD HH:MM:SS` or `null`).
+        - `store_hash`: MD5 checksum hash calculated from store entry count, first creation timestamp, and last modification timestamp.
+        - `<scope>_count`: Total number of entries stored in a given scope.
         - `<scope>_created_at`: Timestamp of the first entry created in a given scope (`YYYY-MM-DD HH:MM:SS`).
         - `<scope>_modified_at`: Timestamp of the most recently modified entry for a given scope (`YYYY-MM-DD HH:MM:SS`).
 
@@ -102,11 +104,13 @@ Retrieves the stored value and timestamps by `id` or by scope and name. Supports
 
 #### Response
 
-Returns a dictionary containing the entry ID, stored value and timestamps:
+Returns a dictionary containing the entry ID, setting key name, scope, stored value and timestamps:
 
 ```json
 {
   "id": 1,
+  "name": "last_run_duration",
+  "scope": "irrigation",
   "value": "15",
   "created_at": "2026-10-12 14:00:00",
   "modified_at": "2026-10-12 14:30:00"
@@ -114,18 +118,20 @@ Returns a dictionary containing the entry ID, stored value and timestamps:
 ```
 
 - `id`: Entry ID or `null` if the key does not exist.
+- `name`: Setting key name or `null` if the key does not exist.
+- `scope`: Scope / namespace identifier or `null` if the key does not exist.
 - `value`: Stored value string or `null` if the key does not exist.
 - `created_at`: Creation timestamp formatted as `YYYY-MM-DD HH:MM:SS` (or `null` if not found).
 - `modified_at`: Last modification timestamp formatted as `YYYY-MM-DD HH:MM:SS` (or `null` if not found).
 
 ### `settings_store.list`
 
-Retrieves all stored entries for a given scope, ordered alphabetically by key name. Supports returning service response data.
+Retrieves all stored entries for a given scope (or across all scopes if `scope: "*"`), ordered alphabetically by key name. Supports returning service response data.
 
-| Field   | Description                                                                 |
-|---------|-----------------------------------------------------------------------------|
-| `store` | Entity ID of the Settings Store sensor (identifies target storage instance) |
-| `scope` | Scope / namespace identifier (optional, defaults to `default`)              |
+| Field   | Description                                                                                                    |
+|---------|----------------------------------------------------------------------------------------------------------------|
+| `store` | Entity ID of the Settings Store sensor (identifies target storage instance)                                    |
+| `scope` | Scope / namespace identifier (optional, defaults to `default`; use `*` to list all entries across all scopes)  |
 
 #### Response
 
@@ -137,50 +143,10 @@ Returns a dictionary containing a `list` array of stored entries:
     {
       "id": 1,
       "name": "interval_minutes",
+      "scope": "irrigation",
       "value": "30",
       "created_at": "2026-10-12 10:00:00",
       "modified_at": "2026-10-12 10:00:00"
-    },
-    {
-      "id": 2,
-      "name": "last_run_duration",
-      "value": "15",
-      "created_at": "2026-10-12 14:00:00",
-      "modified_at": "2026-10-12 14:30:00"
-    }
-  ]
-}
-```
-
-- `list`: Array of entries for the requested scope (ordered alphabetically by `name`).
-    - `id`: Entry ID.
-    - `name`: Setting key name.
-    - `value`: Stored value string.
-    - `created_at`: Creation timestamp formatted as `YYYY-MM-DD HH:MM:SS`.
-    - `modified_at`: Last modification timestamp formatted as `YYYY-MM-DD HH:MM:SS`.
-
-### `settings_store.all`
-
-Retrieves all stored entries across all scopes, ordered alphabetically by scope and key name. Supports returning service response data.
-
-| Field   | Description                                                                 |
-|---------|-----------------------------------------------------------------------------|
-| `store` | Entity ID of the Settings Store sensor (identifies target storage instance) |
-
-#### Response
-
-Returns a dictionary containing a `list` array of stored entries:
-
-```json
-{
-  "list": [
-    {
-      "id": 3,
-      "name": "threshold",
-      "scope": "climate",
-      "value": "22",
-      "created_at": "2026-10-13 08:00:00",
-      "modified_at": "2026-10-13 08:00:00"
     },
     {
       "id": 2,
@@ -194,10 +160,10 @@ Returns a dictionary containing a `list` array of stored entries:
 }
 ```
 
-- `list`: Array of all entries across all scopes (ordered alphabetically by `scope`, then by `name`).
+- `list`: Array of entries for the requested scope (ordered alphabetically by `name`, or by `scope` then `name` when `*` is used).
     - `id`: Entry ID.
-    - `scope`: Scope / namespace identifier.
     - `name`: Setting key name.
+    - `scope`: Scope / namespace identifier.
     - `value`: Stored value string.
     - `created_at`: Creation timestamp formatted as `YYYY-MM-DD HH:MM:SS`.
     - `modified_at`: Last modification timestamp formatted as `YYYY-MM-DD HH:MM:SS`.
@@ -215,11 +181,12 @@ Deletes a specific setting identified by ID or by scope and name. An unknown ID 
 
 ### `settings_store.clear`
 
-Removes all stored entries from the instance's database.
+Removes stored entries from the instance's database for a specific scope, or all entries across all scopes if `scope: "*"` is provided.
 
-| Field   | Description                                                                 |
-|---------|-----------------------------------------------------------------------------|
-| `store` | Entity ID of the Settings Store sensor (identifies target storage instance) |
+| Field   | Description                                                                                                   |
+|---------|---------------------------------------------------------------------------------------------------------------|
+| `store` | Entity ID of the Settings Store sensor (identifies target storage instance)                                   |
+| `scope` | Scope / namespace identifier to clear (optional, defaults to `default`; use `*` to clear all scopes)          |
 
 ## Usage Examples
 
@@ -228,7 +195,7 @@ Removes all stored entries from the instance's database.
 ```yaml
 action: settings_store.set
 data:
-  store: sensor.settings_store_main_entries
+  store: sensor.settings_store_main_store
   scope: irrigation
   name: last_run_duration
   value: "15"
@@ -239,7 +206,7 @@ data:
 ```yaml
 action: settings_store.get
 data:
-  store: sensor.settings_store_main_entries
+  store: sensor.settings_store_main_store
   scope: irrigation
   name: last_run_duration
 response_variable: saved_setting
@@ -254,7 +221,7 @@ data:
 ```yaml
 action: settings_store.list
 data:
-  store: sensor.settings_store_main_entries
+  store: sensor.settings_store_main_store
   scope: irrigation
 response_variable: irrigation_settings
 
@@ -271,7 +238,7 @@ data:
 ```yaml
 action: settings_store.delete
 data:
-  store: sensor.settings_store_main_entries
+  store: sensor.settings_store_main_store
   scope: irrigation
   name: last_run_duration
 ```
@@ -281,7 +248,7 @@ To update or delete an entry by ID, provide `id` instead of `name` and `scope`:
 ```yaml
 action: settings_store.set
 data:
-  store: sensor.settings_store_main_entries
+  store: sensor.settings_store_main_store
   id: 2
   value: "20"
 ```
@@ -289,16 +256,17 @@ data:
 ```yaml
 action: settings_store.delete
 data:
-  store: sensor.settings_store_main_entries
+  store: sensor.settings_store_main_store
   id: 2
 ```
 
 ### Retrieving All Entries Across Scopes
 
 ```yaml
-action: settings_store.all
+action: settings_store.list
 data:
-  store: sensor.settings_store_main_entries
+  store: sensor.settings_store_main_store
+  scope: "*"
 response_variable: all_settings
 
 action: notify.persistent_notification
@@ -309,12 +277,32 @@ data:
     {% endfor %}
 ```
 
-### Clearing All Settings
+### Clearing Settings
+
+To clear settings within the default scope:
 
 ```yaml
 action: settings_store.clear
 data:
-  store: sensor.settings_store_main_entries
+  store: sensor.settings_store_main_store
+```
+
+To clear settings within a specific scope:
+
+```yaml
+action: settings_store.clear
+data:
+  store: sensor.settings_store_main_store
+  scope: irrigation
+```
+
+To clear all stored settings across all scopes:
+
+```yaml
+action: settings_store.clear
+data:
+  store: sensor.settings_store_main_store
+  scope: "*"
 ```
 
 ## Notes
