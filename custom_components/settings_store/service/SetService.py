@@ -5,6 +5,7 @@ import voluptuous as vol
 
 from ..constants import *
 from ..utils.Database import Database
+from ..validator.EntrySelectorValidator import EntrySelectorValidator
 
 
 class SetService:
@@ -16,35 +17,56 @@ class SetService:
             DOMAIN,
             'set',
             self.handle,
-            schema=vol.Schema({
-                vol.Required(FIELD_ENTITY_ID): cv.entity_id,
-                vol.Optional(FIELD_SCOPE, default=DEFAULT_SCOPE): cv.string,
-                vol.Required(FIELD_NAME): cv.string,
+            schema=vol.All(vol.Schema({
+                vol.Required(FIELD_STORE): cv.entity_id,
+                vol.Optional(FIELD_ID): cv.positive_int,
+                vol.Optional(FIELD_NAME): cv.string,
+                vol.Optional(FIELD_SCOPE): cv.string,
                 vol.Required(FIELD_VALUE): cv.string,
-            })
+            }), EntrySelectorValidator.validate)
         )
 
     async def handle(self, request):
-        sensor = self._hass.data[DOMAIN][SENSOR_ENTITIES][request.data[FIELD_ENTITY_ID]]
+        sensor = self._hass.data[DOMAIN][SENSOR_ENTITIES][request.data[FIELD_STORE]]
 
-        await self._hass.async_add_executor_job(
-            self._execute,
-            sensor.path,
-            request.data[FIELD_SCOPE],
-            request.data[FIELD_NAME],
-            request.data[FIELD_VALUE],
-        )
+        if FIELD_ID in request.data:
+            await self._hass.async_add_executor_job(
+                self._execute_by_id,
+                sensor.path,
+                request.data.get(FIELD_ID),
+                request.data.get(FIELD_VALUE),
+            )
+
+        if FIELD_NAME in request.data:
+            await self._hass.async_add_executor_job(
+                self._execute_by_name,
+                sensor.path,
+                request.data.get(FIELD_NAME),
+                request.data.get(FIELD_SCOPE, DEFAULT_SCOPE),
+                request.data.get(FIELD_VALUE),
+            )
+
         sensor.refresh()
 
     @staticmethod
-    def _execute(path, scope, name, value):
+    def _execute_by_id(path, entry_id, value):
         now = datetime.now().strftime(DATETIME_FORMAT)
         with Database.connect(path) as connection:
             connection.execute('''
-                INSERT INTO settings_store (scope, name, value, createdAt, modifiedAt)
+                UPDATE settings_store
+                SET value = ?, modifiedAt = ?
+                WHERE id = ?
+            ''', (value, now, entry_id))
+
+    @staticmethod
+    def _execute_by_name(path, name, scope, value):
+        now = datetime.now().strftime(DATETIME_FORMAT)
+        with Database.connect(path) as connection:
+            connection.execute('''
+                INSERT INTO settings_store (name, scope, value, createdAt, modifiedAt)
                 VALUES (?, ?, ?, ?, ?)
-                ON CONFLICT (scope, name)
+                ON CONFLICT (name, scope)
                 DO UPDATE SET
                     value = excluded.value,
                     modifiedAt = excluded.modifiedAt
-            ''', (scope, name, value, now, now))
+            ''', (name, scope, value, now, now))

@@ -3,6 +3,7 @@ import voluptuous as vol
 
 from ..constants import *
 from ..utils.Database import Database
+from ..validator.EntrySelectorValidator import EntrySelectorValidator
 
 
 class DeleteService:
@@ -14,28 +15,46 @@ class DeleteService:
             DOMAIN,
             'delete',
             self.handle,
-            schema=vol.Schema({
-                vol.Required(FIELD_ENTITY_ID): cv.entity_id,
-                vol.Optional(FIELD_SCOPE, default=DEFAULT_SCOPE): cv.string,
-                vol.Required(FIELD_NAME): cv.string,
-            })
+            schema=vol.All(vol.Schema({
+                vol.Required(FIELD_STORE): cv.entity_id,
+                vol.Optional(FIELD_ID): cv.positive_int,
+                vol.Optional(FIELD_NAME): cv.string,
+                vol.Optional(FIELD_SCOPE): cv.string,
+            }), EntrySelectorValidator.validate)
         )
 
     async def handle(self, request):
-        sensor = self._hass.data[DOMAIN][SENSOR_ENTITIES][request.data[FIELD_ENTITY_ID]]
+        sensor = self._hass.data[DOMAIN][SENSOR_ENTITIES][request.data[FIELD_STORE]]
 
-        await self._hass.async_add_executor_job(
-            self._execute,
-            sensor.path,
-            request.data[FIELD_SCOPE],
-            request.data[FIELD_NAME],
-        )
+        if FIELD_ID in request.data:
+            await self._hass.async_add_executor_job(
+                self._execute_by_id,
+                sensor.path,
+                request.data.get(FIELD_ID),
+            )
+
+        if FIELD_NAME in request.data:
+            await self._hass.async_add_executor_job(
+                self._execute_by_name,
+                sensor.path,
+                request.data.get(FIELD_NAME),
+                request.data.get(FIELD_SCOPE, DEFAULT_SCOPE),
+            )
+
         sensor.refresh()
 
     @staticmethod
-    def _execute(path, scope, name):
+    def _execute_by_id(path, entry_id):
         with Database.connect(path) as connection:
             connection.execute('''
                 DELETE FROM settings_store
-                WHERE scope = ? AND name = ?
-            ''', (scope, name))
+                WHERE id = ?
+            ''', (entry_id,))
+
+    @staticmethod
+    def _execute_by_name(path, name, scope):
+        with Database.connect(path) as connection:
+            connection.execute('''
+                DELETE FROM settings_store
+                WHERE name = ? AND scope = ?
+            ''', (name, scope))

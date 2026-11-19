@@ -65,7 +65,7 @@ Each configured instance creates the following diagnostic sensor:
 
 - `Entries`: Displays the current total number of entries stored
   in the instance's database. This sensor automatically updates whenever records are created, updated, deleted or
-  cleared. Its `entity_id` is passed as a target parameter to the integration's services.
+  cleared. Its `entity_id` is passed in the `store` parameter to the integration's services.
   - Attributes:
     - `store_created_at`: Timestamp of the first entry created in the store (`YYYY-MM-DD HH:MM:SS` or `null`).
     - `store_modified_at`: Timestamp of the most recently modified entry across the entire store (`YYYY-MM-DD HH:MM:SS` or `null`).
@@ -79,23 +79,27 @@ This integration provides the following services:
 ### `settings_store.set`
 
 Sets or updates a value for a specific scope and name in the store. If the entry already exists, its value is updated.
+Alternatively, provide `id` to update an existing entry. An unknown `id` does not create an entry.
+Updating by `id` changes the value and modification timestamp; the entry's name and scope remain unchanged.
 
 | Field       | Description                                                                 |
 |-------------|-----------------------------------------------------------------------------|
-| `entity_id` | Entity ID of the Settings Store sensor (identifies target storage instance) |
-| `scope`     | Scope / namespace for grouping settings (optional, defaults to `default`)   |
-| `name`      | Setting key name                                                            |
+| `store` | Entity ID of the Settings Store sensor (identifies target storage instance) |
+| `id`  | Optional ID of the entry to update; cannot be combined with `scope` or `name` |
+| `scope`     | Scope (defaults to `default` when updating by name) |
+| `name`      | Setting key name (required without `id`)          |
 | `value`     | Value to store                                                              |
 
 ### `settings_store.get`
 
-Retrieves the stored value and timestamps for a given scope and name. Supports returning service response data.
+Retrieves the stored value and timestamps by `id` or by scope and name. Supports returning service response data.
 
 | Field       | Description                                                                 |
 |-------------|-----------------------------------------------------------------------------|
-| `entity_id` | Entity ID of the Settings Store sensor (identifies target storage instance) |
-| `scope`     | Scope / namespace identifier (optional, defaults to `default`)              |
-| `name`      | Setting key name                                                            |
+| `store` | Entity ID of the Settings Store sensor (identifies target storage instance) |
+| `id`        | Optional entry ID; cannot be combined with `scope` or `name`                |
+| `scope`     | Scope (defaults to `default` when retrieving by name)                       |
+| `name`      | Setting key name (required without `id`)                                    |
 
 #### Response
 
@@ -121,7 +125,7 @@ Retrieves all stored entries for a given scope, ordered alphabetically by key na
 
 | Field       | Description                                                                 |
 |-------------|-----------------------------------------------------------------------------|
-| `entity_id` | Entity ID of the Settings Store sensor (identifies target storage instance) |
+| `store` | Entity ID of the Settings Store sensor (identifies target storage instance) |
 | `scope`     | Scope / namespace identifier (optional, defaults to `default`)              |
 
 #### Response
@@ -162,7 +166,7 @@ Retrieves all stored entries across all scopes, ordered alphabetically by scope 
 
 | Field       | Description                                                                 |
 |-------------|-----------------------------------------------------------------------------|
-| `entity_id` | Entity ID of the Settings Store sensor (identifies target storage instance) |
+| `store` | Entity ID of the Settings Store sensor (identifies target storage instance) |
 
 #### Response
 
@@ -172,20 +176,20 @@ Returns a dictionary containing a `list` array of stored entries:
 {
   "list": [
     {
-      "id": 2,
-      "name": "last_run_duration",
-      "scope": "irrigation",
-      "value": "15",
-      "created_at": "2026-10-12 14:00:00",
-      "modified_at": "2026-10-12 14:30:00"
-    },
-    {
       "id": 3,
       "name": "threshold",
       "scope": "climate",
       "value": "22",
       "created_at": "2026-10-13 08:00:00",
       "modified_at": "2026-10-13 08:00:00"
+    },
+    {
+      "id": 2,
+      "name": "last_run_duration",
+      "scope": "irrigation",
+      "value": "15",
+      "created_at": "2026-10-12 14:00:00",
+      "modified_at": "2026-10-12 14:30:00"
     }
   ]
 }
@@ -201,22 +205,14 @@ Returns a dictionary containing a `list` array of stored entries:
 
 ### `settings_store.delete`
 
-Deletes a specific setting identified by scope and name.
+Deletes a specific setting identified by ID or by scope and name. An unknown ID has no effect.
 
 | Field       | Description                                                                 |
 |-------------|-----------------------------------------------------------------------------|
-| `entity_id` | Entity ID of the Settings Store sensor (identifies target storage instance) |
-| `scope`     | Scope / namespace identifier (optional, defaults to `default`)              |
-| `name`      | Setting key name                                                            |
-
-### `settings_store.remove`
-
-Deletes a specific setting identified by its ID.
-
-| Field       | Description                                                                 |
-|-------------|-----------------------------------------------------------------------------|
-| `entity_id` | Entity ID of the Settings Store sensor (identifies target storage instance) |
-| `id`        | ID of the entry to remove                                                   |
+| `store` | Entity ID of the Settings Store sensor (identifies target storage instance) |
+| `id`  | Optional entry ID; cannot be combined with `scope` or `name`                |
+| `scope`     | Scope / namespace identifier (optional, defaults to `default` without `id`) |
+| `name`      | Setting key name (required without `id`)                              |
 
 ### `settings_store.clear`
 
@@ -224,7 +220,7 @@ Removes all stored entries from the instance's database.
 
 | Field       | Description                                                                 |
 |-------------|-----------------------------------------------------------------------------|
-| `entity_id` | Entity ID of the Settings Store sensor (identifies target storage instance) |
+| `store` | Entity ID of the Settings Store sensor (identifies target storage instance) |
 
 ## Usage Examples
 
@@ -233,7 +229,7 @@ Removes all stored entries from the instance's database.
 ```yaml
 action: settings_store.set
 data:
-  entity_id: sensor.settings_store_main_entries
+  store: sensor.settings_store_main_entries
   scope: irrigation
   name: last_run_duration
   value: "15"
@@ -244,7 +240,7 @@ data:
 ```yaml
 action: settings_store.get
 data:
-  entity_id: sensor.settings_store_main_entries
+  store: sensor.settings_store_main_entries
   scope: irrigation
   name: last_run_duration
 response_variable: saved_setting
@@ -259,7 +255,7 @@ data:
 ```yaml
 action: settings_store.list
 data:
-  entity_id: sensor.settings_store_main_entries
+  store: sensor.settings_store_main_entries
   scope: irrigation
 response_variable: irrigation_settings
 
@@ -276,9 +272,26 @@ data:
 ```yaml
 action: settings_store.delete
 data:
-  entity_id: sensor.settings_store_main_entries
+  store: sensor.settings_store_main_entries
   scope: irrigation
   name: last_run_duration
+```
+
+To update or delete an entry by ID, provide `id` instead of `name` and `scope`:
+
+```yaml
+action: settings_store.set
+data:
+  store: sensor.settings_store_main_entries
+  id: 2
+  value: "20"
+```
+
+```yaml
+action: settings_store.delete
+data:
+  store: sensor.settings_store_main_entries
+  id: 2
 ```
 
 ### Retrieving All Entries Across Scopes
@@ -286,7 +299,7 @@ data:
 ```yaml
 action: settings_store.all
 data:
-  entity_id: sensor.settings_store_main_entries
+  store: sensor.settings_store_main_entries
 response_variable: all_settings
 
 action: notify.persistent_notification
@@ -302,7 +315,7 @@ data:
 ```yaml
 action: settings_store.clear
 data:
-  entity_id: sensor.settings_store_main_entries
+  store: sensor.settings_store_main_entries
 ```
 
 ## Notes

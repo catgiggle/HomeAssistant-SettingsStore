@@ -15,14 +15,14 @@ class ListService:
             'list',
             self.handle,
             schema=vol.Schema({
-                vol.Required(FIELD_ENTITY_ID): cv.entity_id,
+                vol.Required(FIELD_STORE): cv.entity_id,
                 vol.Optional(FIELD_SCOPE, default=DEFAULT_SCOPE): cv.string,
             }),
             supports_response=True
         )
 
     async def handle(self, request):
-        sensor = self._hass.data[DOMAIN][SENSOR_ENTITIES][request.data[FIELD_ENTITY_ID]]
+        sensor = self._hass.data[DOMAIN][SENSOR_ENTITIES][request.data[FIELD_STORE]]
 
         result = await self._hass.async_add_executor_job(
             self._execute,
