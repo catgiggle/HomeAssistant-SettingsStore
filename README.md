@@ -128,10 +128,10 @@ Returns a dictionary containing the entry ID, setting key name, scope, stored va
 
 Retrieves all stored entries for a given scope (or across all scopes if `scope: "*"`), ordered alphabetically by key name. Supports returning service response data.
 
-| Field   | Description                                                                                                    |
-|---------|----------------------------------------------------------------------------------------------------------------|
-| `store` | Entity ID of the Settings Store sensor (identifies target storage instance)                                    |
-| `scope` | Scope / namespace identifier (optional, defaults to `default`; use `*` to list all entries across all scopes)  |
+| Field   | Description                                                                                                   |
+|---------|---------------------------------------------------------------------------------------------------------------|
+| `store` | Entity ID of the Settings Store sensor (identifies target storage instance)                                   |
+| `scope` | Scope / namespace identifier (optional, defaults to `default`; use `*` to list all entries across all scopes) |
 
 #### Response
 
@@ -183,10 +183,10 @@ Deletes a specific setting identified by ID or by scope and name. An unknown ID 
 
 Removes stored entries from the instance's database for a specific scope, or all entries across all scopes if `scope: "*"` is provided.
 
-| Field   | Description                                                                                                   |
-|---------|---------------------------------------------------------------------------------------------------------------|
-| `store` | Entity ID of the Settings Store sensor (identifies target storage instance)                                   |
-| `scope` | Scope / namespace identifier to clear (optional, defaults to `default`; use `*` to clear all scopes)          |
+| Field   | Description                                                                                          |
+|---------|------------------------------------------------------------------------------------------------------|
+| `store` | Entity ID of the Settings Store sensor (identifies target storage instance)                          |
+| `scope` | Scope / namespace identifier to clear (optional, defaults to `default`; use `*` to clear all scopes) |
 
 ## Usage Examples
 
